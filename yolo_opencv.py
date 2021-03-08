@@ -15,6 +15,8 @@ import datetime
 ap = argparse.ArgumentParser()
 ap.add_argument('-i', '--input', required=False,
                 help = 'path to input image', default = 'sampledata')
+ap.add_argument('-q', '--quiet', required=False,
+                help = 'supress output', default = 'False')
 ap.add_argument('-o', '--outputfile', required=False,
                 help = 'filename for output video', default='output.mp4')
 ap.add_argument('-od', '--outputdir', required=False,
@@ -43,6 +45,10 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
+def conditionalPrint(v):
+    if str2bool(args.quiet) == False:
+        print(v)
+
 def get_output_layers(net):
 
     layer_names = net.getLayerNames()
@@ -58,7 +64,7 @@ def save_bounded_image(image, class_id, confidence, x, y, x_plus_w, y_plus_h):
         os.makedirs(dirname)
 
     filename = label + '_' + datetime.datetime.now().strftime('%Y-%m-%d_%H_%M_%S_%f') + '_conf' + "{:.2f}".format(confidence) + '.jpg'
-    print ('Saving bounding box:' + filename)
+    conditionalPrint ('Saving bounding box:' + filename)
     roi = image[y:y_plus_h, x:x_plus_w]
     if roi.any():
         if str2bool(args.invertcolor) == False:
@@ -128,19 +134,22 @@ def detect(image):
 def processvideo(file):
     cap = cv2.VideoCapture(file)
 
+
     writer = imageio.write_frames(args.outputfile, (int(cap.get(3)), int(cap.get(4))))
     writer.send(None)
     frame_counter = 0
     while(cap.isOpened()):
         frame_counter = frame_counter + 1
         ret, frame = cap.read()
-        print('Detecting objects in frame ' + str(frame_counter))
+
+        conditionalPrint('Detecting objects in frame: ' + str(frame_counter))
+
         if ret==True:
             if not frame is None:
                 image = detect(frame)
                 writer.send(frame)
             else:
-                print('Frame error in frame ' + str(frame_counter))
+                conditionalPrint('Frame error in frame ' + str(frame_counter))
         else:
             break
     cap.release()
@@ -168,21 +177,21 @@ if args.input.startswith('rtsp'):
         if frame_counter % int(args.fpsthrottle) ==0:
             ret, frame = cap.read()
             if ret and frame_counter >= int(args.framestart):
-                print('Detecting objects in frame ' + str(frame_counter))
+                conditionalPrint('Detecting objects in frame ' + str(frame_counter))
                 frame = detect(frame)
                 if int(args.framelimit) > 0:
                     writer.send(frame)
             else:
-                print('Skipping frame ' + str(frame_counter))
+                conditionalPrint('Skipping frame ' + str(frame_counter))
         else:
-            print('FPS throttling. Skipping frame ' + str(frame_counter))
+            conditionalPrint('FPS throttling. Skipping frame ' + str(frame_counter))
         frame_counter=frame_counter+1
 
 else:
     if os.path.isdir(args.input):
         for dirpath, dirnames, filenames in os.walk(args.input):
             for filename in [f for f in filenames if f.endswith(".mp4")]:
-                print('Processing video ' + os.path.join(dirpath, filename))
+                conditionalPrint('Processing video ' + os.path.join(dirpath, filename))
                 processvideo(os.path.join(dirpath, filename))
     else:
         processvideo(os.path.join(args.input))
