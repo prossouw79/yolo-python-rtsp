@@ -11,6 +11,7 @@ import argparse
 import numpy as np
 import imageio_ffmpeg as imageio
 import datetime
+from time import sleep
 
 ap = argparse.ArgumentParser()
 ap.add_argument('-i', '--input', required=False,
@@ -134,7 +135,6 @@ def detect(image):
 def processvideo(file):
     cap = cv2.VideoCapture(file)
 
-
     writer = imageio.write_frames(args.outputfile, (int(cap.get(3)), int(cap.get(4))))
     writer.send(None)
     frame_counter = 0
@@ -163,7 +163,6 @@ with open(args.classes, 'r') as f:
 COLORS = np.random.uniform(0, 255, size=(len(classes), 3))
 
 if args.input.startswith('rtsp'):
-
     cap = cv2.VideoCapture(args.input)
     if int(args.framelimit) > 0:
         writer = imageio.write_frames(args.outputfile, (int(cap.get(3)), int(cap.get(4))))
@@ -176,13 +175,18 @@ if args.input.startswith('rtsp'):
 
         if frame_counter % int(args.fpsthrottle) ==0:
             ret, frame = cap.read()
-            if ret and frame_counter >= int(args.framestart):
-                conditionalPrint('Detecting objects in frame ' + str(frame_counter))
-                frame = detect(frame)
-                if int(args.framelimit) > 0:
-                    writer.send(frame)
+            if ret:
+                if frame_counter >= int(args.framestart):
+                    conditionalPrint('Detecting objects in frame: ' + str(frame_counter))
+                    frame = detect(frame)
+                    if int(args.framelimit) > 0:
+                        writer.send(frame)
+                else:
+                    conditionalPrint('Skipping frame ' + str(frame_counter))
             else:
-                conditionalPrint('Skipping frame ' + str(frame_counter))
+                print('No frame read from stream. Waiting 1s before retrying')
+                sleep(1)
+                cap = cv2.VideoCapture(args.input)
         else:
             conditionalPrint('FPS throttling. Skipping frame ' + str(frame_counter))
         frame_counter=frame_counter+1

@@ -2,6 +2,7 @@ version: "3.3"
 services:
   rtsp-yolo-python:
     build: .
+    runtime: nvidia
     volumes: 
      - "./output:/app/output"
     command: python3 yolo_opencv.py --quiet ${QUIET} --input ${STREAM} --invertcolor ${INVERT_COLOR} --fpsthrottle ${FPS_THROTTLE}
