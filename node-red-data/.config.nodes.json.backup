@@ -412,7 +412,7 @@
     "node-red-dashboard": {
         "name": "node-red-dashboard",
         "version": "2.28.1",
-        "local": false,
+        "local": true,
         "nodes": {
             "ui_base": {
                 "name": "ui_base",
@@ -626,20 +626,59 @@
             }
         }
     },
-    "node-red-contrib-image-output": {
-        "name": "node-red-contrib-image-output",
-        "version": "0.6.2",
-        "local": false,
+    "node-red-node-base64": {
+        "name": "node-red-node-base64",
+        "version": "0.2.1",
+        "local": true,
         "nodes": {
-            "image": {
-                "name": "image",
+            "base64": {
+                "name": "base64",
                 "types": [
-                    "image"
+                    "base64"
                 ],
                 "enabled": true,
                 "local": true,
-                "module": "node-red-contrib-image-output",
-                "file": "/data/node_modules/node-red-contrib-image-output/image/image.js"
+                "module": "node-red-node-base64",
+                "file": "/data/node_modules/node-red-node-base64/70-base64.js"
+            }
+        }
+    },
+    "node-red-contrib-image-info": {
+        "name": "node-red-contrib-image-info",
+        "version": "0.1.1",
+        "local": false,
+        "nodes": {
+            "image-info": {
+                "name": "image-info",
+                "types": [
+                    "image-info"
+                ],
+                "enabled": true,
+                "local": true,
+                "module": "node-red-contrib-image-info",
+                "file": "/data/node_modules/node-red-contrib-image-info/image_info.js"
+            }
+        }
+    },
+    "node-red-contrib-telegrambot": {
+        "name": "node-red-contrib-telegrambot",
+        "version": "8.10.0",
+        "local": false,
+        "nodes": {
+            "telegrambot": {
+                "name": "telegrambot",
+                "types": [
+                    "telegram bot",
+                    "telegram receiver",
+                    "telegram command",
+                    "telegram event",
+                    "telegram sender",
+                    "telegram reply"
+                ],
+                "enabled": true,
+                "local": true,
+                "module": "node-red-contrib-telegrambot",
+                "file": "/data/node_modules/node-red-contrib-telegrambot/telegrambot/99-telegrambot.js"
             }
         }
     }

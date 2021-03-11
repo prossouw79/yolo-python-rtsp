@@ -9,6 +9,8 @@
                 "view-node-show-label": true,
                 "view-show-tips": true
             }
-        }
+        },
+        "menu-deploymenu-item-node": false,
+        "menu-deploymenu-item-full": true
     }
 }
