@@ -8,13 +8,13 @@ services:
     command: python3 yolo_opencv.py --quiet ${CAM1_QUIET} --input ${CAM1_STREAM} --invertcolor ${CAM1_INVERT_COLOR} --fpsthrottle ${CAM1_FPS_THROTTLE}
     restart: unless-stopped
 
-  rtsp-yolo-python-cam2:
-    build: .
-    runtime: nvidia
-    volumes: 
-     - "./output:/app/output"
-    command: python3 yolo_opencv.py --quiet ${CAM2_QUIET} --input ${CAM2_STREAM} --invertcolor ${CAM2_INVERT_COLOR} --fpsthrottle ${CAM2_FPS_THROTTLE}
-    restart: unless-stopped
+  # rtsp-yolo-python-cam2:
+  #   build: .
+  #   runtime: nvidia
+  #   volumes: 
+  #    - "./output:/app/output"
+  #   command: python3 yolo_opencv.py --quiet ${CAM2_QUIET} --input ${CAM2_STREAM} --invertcolor ${CAM2_INVERT_COLOR} --fpsthrottle ${CAM2_FPS_THROTTLE}
+  #   restart: unless-stopped
 
   node-red:
     image: nodered/node-red:latest
