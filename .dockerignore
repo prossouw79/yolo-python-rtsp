@@ -9,3 +9,5 @@ Dockerfile
 LICENSE
 requirements.txt
 yolo_opencv.iml
+.env
+.env.template

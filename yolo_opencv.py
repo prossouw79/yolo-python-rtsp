@@ -127,10 +127,10 @@ def detect(image):
         w = box[2]
         h = box[3]
         save_bounded_image(orgImage, class_ids[i], confidences[i], round(x), round(y), round(x+w), round(y+h))
-        draw_prediction(image, class_ids[i], confidences[i], round(x), round(y), round(x+w), round(y+h))
+        draw_prediction(orgImage, class_ids[i], confidences[i], round(x), round(y), round(x+w), round(y+h))
     if str2bool(args.invertcolor) == True:
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-    return image
+    return orgImage
 
 def processvideo(file):
     cap = cv2.VideoCapture(file)
