@@ -118,7 +118,7 @@ def detect(image):
 
     indices = cv2.dnn.NMSBoxes(boxes, confidences, conf_threshold, nms_threshold)
 
-    orgImage = image.copy()
+    # orgImage = image.copy()
     for i in indices:
         i = i[0]
         box = boxes[i]
@@ -126,11 +126,17 @@ def detect(image):
         y = box[1]
         w = box[2]
         h = box[3]
-        save_bounded_image(orgImage, class_ids[i], confidences[i], round(x), round(y), round(x+w), round(y+h))
-        draw_prediction(orgImage, class_ids[i], confidences[i], round(x), round(y), round(x+w), round(y+h))
+        # save_bounded_image(orgImage, class_ids[i], confidences[i], round(x), round(y), round(x+w), round(y+h))
+        # draw_prediction(image, class_ids[i], confidences[i], round(x), round(y), round(x+w), round(y+h))
+
+        # draw on full image
+        draw_prediction(image, class_ids[i], confidences[i], round(x), round(y), round(x+w), round(y+h))
+        save_bounded_image(image, class_ids[i], confidences[i], 0, 0, Width, Height)
+
     if str2bool(args.invertcolor) == True:
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-    return orgImage
+    
+    return image
 
 def processvideo(file):
     cap = cv2.VideoCapture(file)
