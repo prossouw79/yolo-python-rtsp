@@ -5,7 +5,7 @@ services:
     runtime: nvidia
     volumes: 
      - "./output:/app/output"
-    command: python3 yolo_opencv.py --quiet ${CAM1_QUIET} --input ${CAM1_STREAM} --invertcolor ${CAM1_INVERT_COLOR} --fpsthrottle ${CAM1_FPS_THROTTLE}
+    command: python3 yolo_opencv.py --quiet ${CAM1_QUIET} --input ${CAM1_STREAM} --invertcolor ${CAM1_INVERT_COLOR} --fpsthrottle ${CAM1_FPS_THROTTLE} --minwidth ${CAM1_MIN_WIDTH}
     restart: unless-stopped
 
   # rtsp-yolo-python-cam2:
@@ -26,3 +26,5 @@ services:
       - ./node-red-data:/data
       - ./output:/detected
     restart: unless-stopped
+    depends_on:
+      - rtsp-yolo-python-cam1

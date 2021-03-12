@@ -18,6 +18,8 @@ ap.add_argument('-i', '--input', required=False,
                 help = 'path to input image', default = 'sampledata')
 ap.add_argument('-q', '--quiet', required=False,
                 help = 'supress output', default = 'False')
+ap.add_argument('-mw', '--minwidth', required=False,
+                help = 'supress output', default = 0)
 ap.add_argument('-o', '--outputfile', required=False,
                 help = 'filename for output video', default='output.mp4')
 ap.add_argument('-od', '--outputdir', required=False,
@@ -111,14 +113,16 @@ def detect(image):
                 h = int(detection[3] * Height)
                 x = center_x - w / 2
                 y = center_y - h / 2
-                class_ids.append(class_id)
-                confidences.append(float(confidence))
-                boxes.append([x, y, w, h])
+
+                if(x+w > int(args.minwidth)):
+                    class_ids.append(class_id)
+                    confidences.append(float(confidence))
+                    boxes.append([x, y, w, h])
 
 
     indices = cv2.dnn.NMSBoxes(boxes, confidences, conf_threshold, nms_threshold)
 
-    # orgImage = image.copy()
+    orgImage = image.copy()
     for i in indices:
         i = i[0]
         box = boxes[i]
@@ -126,12 +130,13 @@ def detect(image):
         y = box[1]
         w = box[2]
         h = box[3]
-        # save_bounded_image(orgImage, class_ids[i], confidences[i], round(x), round(y), round(x+w), round(y+h))
-        # draw_prediction(image, class_ids[i], confidences[i], round(x), round(y), round(x+w), round(y+h))
 
-        # draw on full image
+        save_bounded_image(orgImage, class_ids[i], confidences[i], round(x), round(y), round(x+w), round(y+h))
         draw_prediction(image, class_ids[i], confidences[i], round(x), round(y), round(x+w), round(y+h))
-        save_bounded_image(image, class_ids[i], confidences[i], 0, 0, Width, Height)
+
+        # draw on full image, much slower
+        # draw_prediction(image, class_ids[i], confidences[i], round(x), round(y), round(x+w), round(y+h))
+        # save_bounded_image(image, class_ids[i], confidences[i], 0, 0, Width, Height)
 
     if str2bool(args.invertcolor) == True:
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
