@@ -1,8 +1,8 @@
 version: "3.3"
 services:
   rtsp-yolo-python-cam1:
+    image: pietersynthesis/nvidia-yolo-rtsp-python
     build: .
-    runtime: nvidia
     volumes: 
      - "./output:/app/output"
     command: python3 yolo_opencv.py --quiet ${CAM1_QUIET} --input ${CAM1_STREAM} --invertcolor ${CAM1_INVERT_COLOR} --fpsthrottle ${CAM1_FPS_THROTTLE} --minwidth ${CAM1_MIN_WIDTH}
@@ -14,8 +14,8 @@ services:
               memory: 512M
 
   rtsp-yolo-python-cam2:
+    image: pietersynthesis/nvidia-yolo-rtsp-python
     build: .
-    runtime: nvidia
     volumes: 
     - "./output:/app/output"
     command: python3 yolo_opencv.py --quiet ${CAM2_QUIET} --input ${CAM2_STREAM} --invertcolor ${CAM2_INVERT_COLOR} --fpsthrottle ${CAM2_FPS_THROTTLE} --minwidth ${CAM2_MIN_WIDTH}
