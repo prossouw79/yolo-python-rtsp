@@ -131,12 +131,12 @@ def detect(image):
         w = box[2]
         h = box[3]
 
-        save_bounded_image(orgImage, class_ids[i], confidences[i], round(x), round(y), round(x+w), round(y+h))
-        draw_prediction(image, class_ids[i], confidences[i], round(x), round(y), round(x+w), round(y+h))
+        # save_bounded_image(orgImage, class_ids[i], confidences[i], round(x), round(y), round(x+w), round(y+h))
+        # draw_prediction(image, class_ids[i], confidences[i], round(x), round(y), round(x+w), round(y+h))
 
         # draw on full image, much slower
-        # draw_prediction(image, class_ids[i], confidences[i], round(x), round(y), round(x+w), round(y+h))
-        # save_bounded_image(image, class_ids[i], confidences[i], 0, 0, Width, Height)
+        draw_prediction(image, class_ids[i], confidences[i], round(x), round(y), round(x+w), round(y+h))
+        save_bounded_image(image, class_ids[i], confidences[i], 0, 0, Width, Height)
 
     if str2bool(args.invertcolor) == True:
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
@@ -184,7 +184,7 @@ if args.input.startswith('rtsp'):
             writer.close()
             break
 
-        if frame_counter % int(args.fpsthrottle) ==0:
+        if frame_counter % int(args.fpsthrottle) == 0:
             ret, frame = cap.read()
             if ret:
                 if frame_counter >= int(args.framestart):
@@ -192,6 +192,7 @@ if args.input.startswith('rtsp'):
                     frame = detect(frame)
                     if int(args.framelimit) > 0:
                         writer.send(frame)
+                    frame_counter = 0
                 else:
                     conditionalPrint('Skipping frame ' + str(frame_counter))
             else:
