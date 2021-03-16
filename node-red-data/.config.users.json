@@ -10,8 +10,8 @@
                 "view-show-tips": true
             }
         },
-        "menu-deploymenu-item-node": false,
-        "menu-deploymenu-item-full": true,
-        "menu-menu-item-sidebar": false
+        "menu-deploymenu-item-node": true,
+        "menu-deploymenu-item-full": false,
+        "menu-menu-item-sidebar": true
     }
 }
