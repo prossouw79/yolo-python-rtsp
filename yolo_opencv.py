@@ -12,12 +12,16 @@ import numpy as np
 import imageio_ffmpeg as imageio
 import datetime
 from time import sleep
+import time
+import random
 
 ap = argparse.ArgumentParser()
 ap.add_argument('-i', '--input', required=False,
                 help = 'path to input image', default = 'sampledata')
 ap.add_argument('-q', '--quiet', required=False,
                 help = 'supress output', default = 'False')
+ap.add_argument('-d', '--debug', required=False,
+                help = 'debug output', default = 'False')
 ap.add_argument('-mw', '--minwidth', required=False,
                 help = 'supress output', default = 0)
 ap.add_argument('-o', '--outputfile', required=False,
@@ -39,6 +43,8 @@ ap.add_argument('-ic', '--invertcolor', required=False,
 ap.add_argument('-fpt', '--fpsthrottle', required=False,
                 help = 'skips (int) x frames in order to catch up with the stream for slow machines 1 = no throttle',  default = 1)
 args = ap.parse_args()
+
+lastSave = time.time()
 
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
@@ -81,6 +87,24 @@ def draw_prediction(img, class_id, confidence, x, y, x_plus_w, y_plus_h):
     cv2.rectangle(img, (x,y), (x_plus_w,y_plus_h), color, 3)
     cv2.putText(img, label, (x-10,y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 3)
 
+def saveDebugFrame(image):
+    Width = image.shape[1]
+    Height = image.shape[0]
+    scale = 0.00392
+
+    dirname = os.path.join('debug', "debugFrame")
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
+
+    confidence = round(random.uniform(0, 1),2)
+    filename = 'debug.jpg'
+    
+    roi = image[0:Height, 0:Width]
+    if roi.any():
+        if str2bool(args.invertcolor) == False:
+            roi = cv2.cvtColor(roi, cv2.COLOR_RGB2BGR)
+        cv2.imwrite(os.path.join(dirname, filename), roi)
+
 def detect(image):
 
     Width = image.shape[1]
@@ -106,7 +130,7 @@ def detect(image):
             scores = detection[5:]
             class_id = np.argmax(scores)
             confidence = scores[class_id]
-            if confidence > 0.5:
+            if confidence > conf_threshold:
                 center_x = int(detection[0] * Width)
                 center_y = int(detection[1] * Height)
                 w = int(detection[2] * Width)
@@ -119,10 +143,9 @@ def detect(image):
                     confidences.append(float(confidence))
                     boxes.append([x, y, w, h])
 
-
     indices = cv2.dnn.NMSBoxes(boxes, confidences, conf_threshold, nms_threshold)
 
-    orgImage = image.copy()
+    # orgImage = image.copy()
     for i in indices:
         i = i[0]
         box = boxes[i]
@@ -141,6 +164,8 @@ def detect(image):
     if str2bool(args.invertcolor) == True:
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     
+    lastSave = time.time()
+
     return image
 
 def processvideo(file):
@@ -173,12 +198,14 @@ with open(args.classes, 'r') as f:
     classes = [line.strip() for line in f.readlines()]
 COLORS = np.random.uniform(0, 255, size=(len(classes), 3))
 
-if args.input.startswith('rtsp'):
+if args.input.startswith('rtsp') or args.input.startswith('http'):
+    print('Connecting to ' + args.input)
     cap = cv2.VideoCapture(args.input)
     if int(args.framelimit) > 0:
         writer = imageio.write_frames(args.outputfile, (int(cap.get(3)), int(cap.get(4))))
         writer.send(None)
     frame_counter = 0
+    
     while(True):
         if int(args.framelimit) > 0 and frame_counter > int(args.framestart) + int(args.framelimit):
             writer.close()
@@ -187,9 +214,15 @@ if args.input.startswith('rtsp'):
         if frame_counter % int(args.fpsthrottle) == 0:
             ret, frame = cap.read()
             if ret:
-                if frame_counter >= int(args.framestart):
+                now = time.time()
+                elapsedSeconds = now - lastSave
+                if frame_counter >= int(args.framestart) and elapsedSeconds >= 1:
+                    if(str2bool(args.debug)):
+                        saveDebugFrame(frame)
+
                     conditionalPrint('Detecting objects in frame: ' + str(frame_counter))
                     frame = detect(frame)
+                          
                     if int(args.framelimit) > 0:
                         writer.send(frame)
                     frame_counter = 0

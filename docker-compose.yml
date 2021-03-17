@@ -1,30 +1,30 @@
 version: "3.3"
 services:
+  vlc-transcoder:
+    image: galexrt/vlc:latest
+    command: vlc -I http -q ${CAM1_STREAM} ":sout=#transcode{acodec=none,vcodec=h264,vb=0,scale=0.5}:http{mux=ffmpeg{mux=flv},dst=0.0.0.0:8119}"
+    ports: 
+      - "8119:8119"
+    networks: 
+      camera-stream-network:
+
   rtsp-yolo-python-cam1:
     image: pietersynthesis/nvidia-yolo-rtsp-python
     build: .
+    networks: 
+      camera-stream-network:
     volumes: 
      - "./output:/app/output"
-    command: python3 yolo_opencv.py --quiet ${CAM1_QUIET} --input ${CAM1_STREAM} --invertcolor ${CAM1_INVERT_COLOR} --fpsthrottle ${CAM1_FPS_THROTTLE} --minwidth ${CAM1_MIN_WIDTH}
+     - "./debug:/app/debug"
+    command: python3 yolo_opencv.py --quiet ${CAM1_QUIET} --debug ${CAM1_DEBUG_FRAMES} --input http://vlc-transcoder:8119 --invertcolor ${CAM1_INVERT_COLOR} --fpsthrottle ${CAM1_FPS_THROTTLE} --minwidth ${CAM1_MIN_WIDTH}
     restart: unless-stopped
-    deploy:
-        resources:
-            limits:
-              cpus: '2'
-              memory: 512M
-
-  rtsp-yolo-python-cam2:
-    image: pietersynthesis/nvidia-yolo-rtsp-python
-    build: .
-    volumes: 
-    - "./output:/app/output"
-    command: python3 yolo_opencv.py --quiet ${CAM2_QUIET} --input ${CAM2_STREAM} --invertcolor ${CAM2_INVERT_COLOR} --fpsthrottle ${CAM2_FPS_THROTTLE} --minwidth ${CAM2_MIN_WIDTH}
-    restart: unless-stopped
-    deploy:
-        resources:
-            limits:
-              cpus: '1'
-              memory: 512M
+    # deploy:
+    #     resources:
+    #         limits:
+    #           cpus: '4'
+    #           memory: 512M
+    depends_on:
+     - vlc-transcoder
 
   node-red:
     image: nodered/node-red:latest
@@ -38,3 +38,7 @@ services:
     restart: unless-stopped
     depends_on:
       - rtsp-yolo-python-cam1
+
+networks:
+  camera-stream-network:
+    driver: bridge
